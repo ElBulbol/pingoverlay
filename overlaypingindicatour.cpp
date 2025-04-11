@@ -76,7 +76,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
         WINDOW_TITLE,
         WS_POPUP,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        100, 60, // Small window size
+        120, 70, // Increased window size
         nullptr, nullptr, hInstance, nullptr
     );
 
@@ -122,14 +122,14 @@ void CreateButtons(HWND hwndParent) {
     );
 
     hwndMinimize = CreateWindow(
-        L"BUTTON", L"_",
+        L"BUTTON", L"-",
         WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-        65, 5, 15, 15, // Small button next to close
+        60, 5, 15, 15, // Small button next to close
         hwndParent, (HMENU)101,
         hInst, nullptr
     );
 
-    // Set button colors (black background, white text)
+    // Make both buttons owner-drawn to match the style
     SendMessage(hwndClose, BM_SETSTYLE, BS_OWNERDRAW, 0);
     SendMessage(hwndMinimize, BM_SETSTYLE, BS_OWNERDRAW, 0);
 }
@@ -152,7 +152,7 @@ std::wstring ExecutePing() {
     si.hStdError = hWrite;
 
     // Execute ping command
-    wchar_t cmd[] = L"ping google.com -n 1";
+    wchar_t cmd[] = L"ping 1.1.1.1 -n 1";
     if (CreateProcessW(nullptr, cmd, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
         CloseHandle(hWrite);
 
@@ -199,7 +199,7 @@ void UpdatePing() {
         }
 
         InvalidateRect(hwnd, nullptr, TRUE);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
@@ -214,13 +214,13 @@ Gdiplus::Color InterpolateColor(float t, Gdiplus::Color c1, Gdiplus::Color c2) {
 // Compute ping text color based on ping value
 Gdiplus::Color GetPingColor(int pingMs) {
     // Define color stops
-    const int thresholds[] = { 0, 80, 90, 150, 300 };
+    const int thresholds[] = { 0, 50, 70, 100, 200 }; // More sensitive thresholds
     const Gdiplus::Color colors[] = {
         Gdiplus::Color(255, 0, 255, 0),   // Green at 0 ms
-        Gdiplus::Color(255, 0, 255, 0),   // Green at 80 ms
-        Gdiplus::Color(255, 255, 255, 0), // Yellow at 90 ms
-        Gdiplus::Color(255, 255, 128, 128), // Light red at 150 ms
-        Gdiplus::Color(255, 255, 0, 0)    // Bold red at 300 ms
+        Gdiplus::Color(255, 0, 255, 0),   // Green at 50 ms
+        Gdiplus::Color(255, 255, 255, 0), // Yellow at 70 ms
+        Gdiplus::Color(255, 255, 128, 128), // Light red at 100 ms
+        Gdiplus::Color(255, 255, 0, 0)    // Bold red at 200 ms
     };
 
     // Clamp ping value to avoid extrapolation
@@ -234,7 +234,7 @@ Gdiplus::Color GetPingColor(int pingMs) {
         }
     }
 
-    // If pingMs > 300, return bold red
+    // If pingMs > 200, return bold red
     return colors[4];
 }
 
@@ -311,11 +311,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             HDC hdc = pDIS->hDC;
             RECT rc = pDIS->rcItem;
 
-            // Draw black background
+            // Draw button background
             FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+            SetTextColor(hdc, RGB(255, 255, 255)); // White text for buttons
 
-            // Draw white text
-            SetTextColor(hdc, RGB(255, 255, 255));
+            // Draw text
             SetBkMode(hdc, TRANSPARENT);
             wchar_t text[2];
             GetWindowTextW(pDIS->hwndItem, text, 2);
@@ -384,4 +384,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     return 0;
 }
-//to compile the code ---> g++ -o overlayindecator  overlaypingindicatour.cpp -mwindows -lgdiplus -lcomctl32 -lshell32 -municode
+// g++ -o overlayindecator overlaypingindicatour.cpp -mwindows -lgdiplus -lcomctl32 -lshell32 -municode; Start-Process .\overlayindecator.exe
