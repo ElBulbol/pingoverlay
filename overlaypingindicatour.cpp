@@ -11,6 +11,9 @@
 #include <vector>
 #include <algorithm> // For std::clamp
 
+// Define resource ID for the icon
+#define IDI_MYICON 101
+
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "shell32.lib")
@@ -67,6 +70,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     wc.lpszClassName = CLASS_NAME;
     wc.hbrBackground = nullptr;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYICON));
+    wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYICON));
     RegisterClassEx(&wc);
 
     // Create window
@@ -384,4 +389,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     return 0;
 }
-// g++ -o overlayindecator overlaypingindicatour.cpp -mwindows -lgdiplus -lcomctl32 -lshell32 -municode; Start-Process .\overlayindecator.exe
+// g++ -o overlayindecator overlaypingindicatour.cpp resource.o -mwindows -lgdiplus -lcomctl32 -lshell32 -municode
